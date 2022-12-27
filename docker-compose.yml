@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+
+
+  wineglass-httpd:
+    build: .
+    ports:
+      - 2222:80
+    volumes:
+      - ./html:/var/www/html
+    container_name: wineglass_httpd
+
+  wineglass-mysql:
+    image: mysql:5.7
+    command:
+      'mysqld --max-allowed-packet=67108864'
+    ports:
+      - 3321:3306
+    volumes:
+      - ./mysql/runtime2:/var/lib/mysql
+    container_name: wineglass_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+  wineglass-phpmyadmin:
+    depends_on:
+      - wineglass-mysql
+    image: phpmyadmin/phpmyadmin
+    container_name: wineglass_phpmyadmin
+    ports:
+      - 5523:80
+    environment:
+      PMA_HOST: wineglass-httpd
+      MYSQL_ROOT_PASSWORD: root
+
