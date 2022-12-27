@@ -34,8 +34,11 @@ RUN yum install -y \
 
 RUN echo "ServerName localhost" >> /etc/httpd/conf/httpd.conf
 
+
+
 RUN sed -i '/<Directory "\/var\/www\/html">/,/<\/Directory>/ s/AllowOverride None/AllowOverride all/' /etc/httpd/conf/httpd.conf
 
+RUN sed -i -e 's/\/var\/www\/html/\/var\/www\/html\/web/g' /etc/httpd/conf/httpd.conf
 
 RUN sed -i -e 's/memory_limit = 128M/memory_limit = -1/g' /etc/php.ini
 
@@ -60,5 +63,16 @@ EXPOSE 80 443
 WORKDIR /var/www/html
 
 COPY ./html/ ./
+
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+
+RUN php composer-setup.php --version=1.10.16
+RUN php -r "unlink('composer-setup.php');"
+RUN mv -v composer.phar /usr/bin/composer
+
+RUN curl -OL "https://github.com/drush-ops/drush-launcher/releases/latest/download/drush.phar" -o drush.phar
+RUN chmod +x drush.phar
+RUN mv -v drush.phar /usr/bin/drush
+
 
 CMD ["/usr/sbin/httpd", "-DFOREGROUND"]
